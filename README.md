@@ -23,7 +23,7 @@ Para publicarlo en GitHub Pages:
 El enlace normal abre una vista simple para todo el personal del IIEE:
 
 ```text
-https://usuario.github.io/repositorio/
+[https://usuario.github.io/repositorio/](https://usuario.github.io/repositorio/)
 ```
 
 Incluye:
