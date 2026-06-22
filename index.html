@@ -1,0 +1,1957 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IIEE | Seguimiento de objetivos</title>
+  <style>
+    :root {
+      --brown-900: #2b1609;
+      --brown-700: #6f330d;
+      --orange-600: #df7b00;
+      --orange-100: #ffe0b3;
+      --green-600: #0f8f78;
+      --yellow-500: #f0a000;
+      --red-600: #b42318;
+      --ink: #2a1c12;
+      --muted: #7a6654;
+      --line: #e5d8c7;
+      --surface: #ffffff;
+      --band: #fbf3e8;
+      --page: #f5efe7;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--page);
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    button {
+      min-height: 40px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 9px 13px;
+      color: var(--brown-900);
+      background: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: var(--yellow-500); }
+
+    .primary {
+      color: white;
+      background: var(--brown-700);
+      border-color: var(--brown-700);
+    }
+
+    .ghost {
+      background: transparent;
+      border-color: var(--line);
+    }
+
+    .danger {
+      color: white;
+      background: var(--red-600);
+      border-color: var(--red-600);
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 34px clamp(18px, 4vw, 56px) 28px;
+      color: white;
+      background:
+        radial-gradient(circle at 12px 12px, rgba(255, 193, 89, .11) 2px, transparent 3px) 0 0 / 28px 28px,
+        linear-gradient(100deg, #2b1609, #6f330d 58%, #df7b00);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--orange-100);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: clamp(30px, 4vw, 48px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin-bottom: 0;
+      color: #fff1dc;
+      font-size: 17px;
+    }
+
+    .header-actions, .toolbar, .button-row, .filters {
+      display: flex;
+      align-items: end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .edit-only { display: none; }
+
+    body.edit-mode .edit-only { display: inline-flex; }
+
+    body:not(.edit-mode) .full-dashboard { display: none !important; }
+    body.edit-mode .public-only { display: none !important; }
+
+    .mode-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      border: 1px solid rgba(255, 255, 255, .32);
+      border-radius: 6px;
+      padding: 9px 13px;
+      color: white;
+      background: rgba(255, 255, 255, .14);
+      font-weight: 800;
+    }
+
+    .shell {
+      width: min(1500px, calc(100% - 32px));
+      margin: -18px auto 48px;
+    }
+
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--line);
+      box-shadow: 0 16px 35px rgba(74, 40, 13, .16);
+    }
+
+    .status-strip div {
+      min-width: 0;
+      padding: 16px;
+      background: var(--surface);
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .status-strip strong {
+      display: block;
+      overflow-wrap: anywhere;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .section-grid.three {
+      grid-template-columns: 1.2fr 1fr 1fr;
+    }
+
+    .public-hero {
+      display: grid;
+      grid-template-columns: minmax(280px, .9fr) minmax(0, 1.4fr);
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .radial-card {
+      display: grid;
+      justify-items: center;
+      align-content: center;
+      min-height: 330px;
+      text-align: center;
+    }
+
+    .radial-chart {
+      --value: 0;
+      display: grid;
+      place-items: center;
+      width: min(270px, 74vw);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at center, white 0 58%, transparent 59%),
+        conic-gradient(var(--green-600) calc(var(--value) * 1%), #efe2d2 0);
+      box-shadow: inset 0 0 0 1px var(--line), 0 18px 38px rgba(74, 40, 13, .12);
+    }
+
+    .radial-chart strong {
+      display: block;
+      color: var(--brown-900);
+      font-size: clamp(46px, 7vw, 76px);
+      line-height: .9;
+    }
+
+    .radial-chart span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .public-kpis {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+      width: 100%;
+    }
+
+    .public-kpis div {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--band);
+    }
+
+    .public-kpis strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 24px;
+    }
+
+    .public-read {
+      display: grid;
+      gap: 12px;
+    }
+
+    .public-objectives {
+      display: grid;
+      gap: 10px;
+    }
+
+    .public-objectives details {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .public-objectives summary {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      padding: 16px;
+      cursor: pointer;
+      background: var(--band);
+      font-weight: 800;
+    }
+
+    .public-objective-body {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+    }
+
+    .line-action {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 120px;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+
+    .line-action b {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .panel, .objective-card, .task-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: 0 10px 22px rgba(74, 40, 13, .08);
+    }
+
+    .panel { padding: 18px; }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .panel-title h2 { margin-bottom: 0; }
+
+    .sidebar {
+      position: sticky;
+      top: 14px;
+      align-self: start;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 11px;
+      color: var(--ink);
+      background: white;
+      text-transform: none;
+    }
+
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+    }
+
+    .filters {
+      align-items: stretch;
+      margin-bottom: 14px;
+    }
+
+    .filters label { min-width: 170px; }
+    .filters .search { flex: 1 1 260px; }
+
+    .summary-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .summary-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .summary-row:first-child { border-top: 0; }
+
+    .bar {
+      overflow: hidden;
+      height: 10px;
+      border-radius: 999px;
+      background: #efe2d2;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--orange-600), var(--green-600));
+    }
+
+    .objective-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .objective-card {
+      overflow: hidden;
+    }
+
+    .objective-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      padding: 18px;
+      background: var(--band);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .strategic {
+      margin: 0 0 8px;
+      color: var(--brown-700);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .objective-head h2 {
+      margin-bottom: 8px;
+      font-size: 22px;
+      line-height: 1.18;
+    }
+
+    .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: white;
+      border: 1px solid var(--line);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .pill.done { color: white; background: var(--green-600); border-color: var(--green-600); }
+    .pill.active { color: white; background: var(--orange-600); border-color: var(--orange-600); }
+    .pill.pending { color: var(--brown-900); background: var(--orange-100); border-color: #ffd28e; }
+    .pill.high { color: white; background: var(--red-600); border-color: var(--red-600); }
+    .pill.medium { color: var(--brown-900); background: #ffe8bc; border-color: #f3c674; }
+    .pill.low { color: white; background: var(--green-600); border-color: var(--green-600); }
+
+    .objective-progress {
+      min-width: 170px;
+      text-align: right;
+    }
+
+    .objective-progress strong {
+      display: block;
+      margin-bottom: 9px;
+      font-size: 34px;
+      line-height: 1;
+    }
+
+    .tasks {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+    }
+
+    .task-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 172px;
+      gap: 14px;
+      padding: 14px;
+      box-shadow: none;
+    }
+
+    .task-title {
+      margin-bottom: 10px;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .task-details {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .task-details b {
+      display: block;
+      color: var(--ink);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .task-side {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .risk-matrix {
+      display: grid;
+      grid-template-columns: 118px repeat(3, minmax(0, 1fr));
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--line);
+    }
+
+    .risk-matrix > div {
+      min-height: 76px;
+      padding: 10px;
+      background: white;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .risk-matrix .head,
+    .risk-matrix .axis {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      background: var(--band);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .risk-cell {
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      text-align: center;
+    }
+
+    .risk-cell.green { background: rgba(15, 143, 120, .12); }
+    .risk-cell.amber { background: rgba(240, 160, 0, .18); }
+    .risk-cell.red { background: rgba(180, 35, 24, .14); }
+
+    .risk-cell strong {
+      display: block;
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .risk-list,
+    .glossary-grid,
+    .milestone-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .risk-item,
+    .glossary-item,
+    .milestone-item {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--band);
+    }
+
+    .risk-item b,
+    .glossary-item b,
+    .milestone-item b { display: block; margin-bottom: 5px; }
+
+    .small {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .gantt-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+
+    .gantt {
+      min-width: 1080px;
+      --months: 12;
+    }
+
+    .gantt-head,
+    .gantt-row {
+      display: grid;
+      grid-template-columns: 330px repeat(var(--months), minmax(64px, 1fr));
+      align-items: stretch;
+    }
+
+    .gantt-head {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--band);
+    }
+
+    .gantt-head > div,
+    .gantt-task,
+    .gantt-lane {
+      min-height: 44px;
+      padding: 9px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .gantt-head > div {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .gantt-task {
+      font-size: 13px;
+      background: white;
+    }
+
+    .gantt-lane {
+      grid-column: 2 / -1;
+      position: relative;
+      background:
+        repeating-linear-gradient(90deg, transparent 0, transparent calc((100% / var(--months)) - 1px), rgba(229, 216, 199, .9) calc((100% / var(--months)) - 1px), rgba(229, 216, 199, .9) calc(100% / var(--months)));
+    }
+
+    .gantt-track {
+      position: relative;
+      height: 18px;
+      margin-top: 4px;
+      border-radius: 999px;
+      background: #efe2d2;
+    }
+
+    .gantt-bar {
+      position: absolute;
+      height: 18px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--orange-600), var(--green-600));
+    }
+
+    .gantt-milestone {
+      position: absolute;
+      top: 3px;
+      width: 12px;
+      height: 12px;
+      border: 3px solid var(--red-600);
+      border-radius: 2px;
+      background: white;
+      transform: rotate(45deg);
+    }
+
+    .report-only { display: none; }
+
+    @media print {
+      .app-header,
+      .filters,
+      .task-side,
+      dialog,
+      .no-print { display: none !important; }
+      body { background: white; }
+      .shell { width: 100%; margin: 0; }
+      .panel,
+      .objective-card,
+      .task-card {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+      .report-only { display: block; }
+    }
+
+    .progress-input {
+      display: grid;
+      grid-template-columns: 1fr 46px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .read-only-side {
+      min-width: 172px;
+    }
+
+    .progress-input input[type="range"] { padding: 0; }
+    .progress-input output { text-align: right; font-weight: 800; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .wide { grid-column: 1 / -1; }
+
+    dialog {
+      width: min(760px, calc(100% - 28px));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0;
+      color: var(--ink);
+      box-shadow: 0 30px 80px rgba(43, 22, 9, .32);
+    }
+
+    dialog::backdrop { background: rgba(43, 22, 9, .46); }
+
+    .dialog-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 18px;
+      color: white;
+      background: var(--brown-700);
+    }
+
+    .dialog-head h2 { margin: 0; }
+    .dialog-body { padding: 18px; }
+
+    .empty {
+      padding: 28px;
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .62);
+    }
+
+    @media (max-width: 980px) {
+      .app-header, .objective-head, .task-card { grid-template-columns: 1fr; }
+      .app-header { display: grid; }
+      .status-strip, .layout, .task-details, .section-grid, .section-grid.three, .public-hero { grid-template-columns: 1fr 1fr; }
+      .sidebar { position: static; }
+      .objective-progress { min-width: 0; text-align: left; }
+    }
+
+    @media (max-width: 680px) {
+      .status-strip, .layout, .task-details, .form-grid, .section-grid, .section-grid.three, .public-hero, .public-kpis, .line-action { grid-template-columns: 1fr; }
+      .shell { width: min(100% - 20px, 1500px); }
+      .app-header { padding-inline: 16px; }
+      .header-actions button, .filters label { width: 100%; }
+      .risk-matrix { grid-template-columns: 90px repeat(3, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">IIEE | Planificación anual</p>
+      <h1>Seguimiento de objetivos</h1>
+      <p class="lead">Tablero operativo para objetivos específicos, tareas, responsables, prioridades y avances.</p>
+    </div>
+    <div class="header-actions">
+      <span class="mode-pill" id="modeLabel">Vista dashboard</span>
+      <button class="primary edit-only" id="newObjectiveBtn" type="button">Sumar objetivo</button>
+      <button class="edit-only" id="newTaskBtn" type="button">Sumar tarea</button>
+      <button class="full-dashboard" id="exportBtn" type="button">Exportar CSV</button>
+      <button class="full-dashboard" id="excelReportBtn" type="button">Informe Excel</button>
+      <button class="full-dashboard" id="pdfReportBtn" type="button">Informe PDF</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="public-only public-hero" id="publicDashboard">
+      <div class="panel radial-card">
+        <div class="radial-chart" id="publicRadial">
+          <div>
+            <strong id="publicProgress">0%</strong>
+            <span>Avance promedio total</span>
+          </div>
+        </div>
+        <div class="public-kpis">
+          <div><span class="label">Objetivos</span><strong id="publicObjectivesCount">0</strong></div>
+          <div><span class="label">Tareas</span><strong id="publicTasksCount">0</strong></div>
+          <div><span class="label">Riesgo alto</span><strong id="publicHighRisk">0</strong></div>
+        </div>
+      </div>
+      <div class="public-read">
+        <div class="panel">
+          <div class="panel-title">
+            <h2>Matriz de riesgo</h2>
+            <span class="small">Lectura institucional agregada</span>
+          </div>
+          <div id="publicRiskMatrix"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">
+            <h2>Objetivos estratégicos y líneas de acción</h2>
+            <span class="small">Abrir para ver información general</span>
+          </div>
+          <div class="public-objectives" id="publicObjectives"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="status-strip full-dashboard" aria-live="polite">
+      <div><span class="label">Objetivos</span><strong id="metricObjectives">0</strong></div>
+      <div><span class="label">Tareas</span><strong id="metricTasks">0</strong></div>
+      <div><span class="label">Avance promedio</span><strong id="metricProgress">0%</strong></div>
+      <div><span class="label">Alta prioridad</span><strong id="metricHigh">0</strong></div>
+    </section>
+
+    <section class="layout full-dashboard">
+      <aside class="panel sidebar">
+        <h2>Resumen</h2>
+        <div class="summary-list">
+          <div class="summary-row"><span>No comenzado</span><b id="countPending">0</b></div>
+          <div class="summary-row"><span>En curso</span><b id="countActive">0</b></div>
+          <div class="summary-row"><span>Resuelto</span><b id="countDone">0</b></div>
+        </div>
+        <div class="summary-list" id="responsibleSummary"></div>
+      </aside>
+
+      <section>
+        <div class="panel">
+          <div class="filters">
+            <label class="search">Buscar
+              <input id="searchInput" type="search" placeholder="Objetivo, tarea, responsable, comentario...">
+            </label>
+            <label>Estado
+              <select id="statusFilter">
+                <option value="">Todos</option>
+                <option value="1">No comenzado</option>
+                <option value="2">En curso</option>
+                <option value="3">Resuelto</option>
+              </select>
+            </label>
+            <label>Prioridad
+              <select id="priorityFilter">
+                <option value="">Todas</option>
+                <option>Alta</option>
+                <option>Media</option>
+                <option>Baja</option>
+              </select>
+            </label>
+            <label>Responsable
+              <select id="ownerFilter"><option value="">Todos</option></select>
+            </label>
+          </div>
+        </div>
+        <div class="objective-list" id="objectiveList"></div>
+      </section>
+    </section>
+
+    <section class="section-grid three full-dashboard">
+      <div class="panel">
+        <div class="panel-title">
+          <h2>Semáforo ejecutivo</h2>
+          <span class="small">Lectura rápida</span>
+        </div>
+        <div id="trafficLight"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">
+          <h2>Indicadores</h2>
+          <span class="small">Cumplimiento</span>
+        </div>
+        <div id="complianceIndicators" class="summary-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">
+          <h2>Alertas</h2>
+          <span class="small">Riesgo operativo</span>
+        </div>
+        <div id="alertsList" class="risk-list"></div>
+      </div>
+    </section>
+
+    <section class="section-grid full-dashboard">
+      <div class="panel">
+        <div class="panel-title">
+          <h2>Matriz de riesgo tipo semáforo</h2>
+          <span class="small">Riesgo x prioridad</span>
+        </div>
+        <div id="riskMatrix"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">
+          <h2>Lectura de riesgo</h2>
+          <span class="small">Tareas críticas</span>
+        </div>
+        <div id="riskNarrative"></div>
+      </div>
+    </section>
+
+    <section class="panel full-dashboard">
+      <div class="panel-title">
+        <h2>Gantt visual con hitos intermedios</h2>
+        <span class="small">Barras por ventana temporal y rombos por hito</span>
+      </div>
+      <div class="gantt-wrap">
+        <div id="gantt" class="gantt"></div>
+      </div>
+    </section>
+
+    <section class="panel full-dashboard">
+      <div class="panel-title">
+        <h2>Glosario</h2>
+        <span class="small">Referencias del tablero</span>
+      </div>
+      <div class="glossary-grid" id="glossaryGrid"></div>
+    </section>
+
+    <section class="panel report-only" id="reportSummary">
+      <h2>Informe resumido</h2>
+      <div id="printSummary"></div>
+    </section>
+  </main>
+
+  <dialog id="objectiveDialog">
+    <form method="dialog" id="objectiveForm">
+      <div class="dialog-head">
+        <h2>Sumar objetivo</h2>
+        <button value="cancel" type="submit">Cerrar</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-grid">
+          <label class="wide">Objetivo estratégico
+            <input name="strategic" required>
+          </label>
+          <label class="wide">Objetivo específico
+            <input name="specific" required>
+          </label>
+        </div>
+        <p></p>
+        <div class="button-row">
+          <button class="primary" value="save" type="submit">Guardar objetivo</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="taskDialog">
+    <form method="dialog" id="taskForm">
+      <div class="dialog-head">
+        <h2 id="taskDialogTitle">Sumar tarea</h2>
+        <button value="cancel" type="submit">Cerrar</button>
+      </div>
+      <div class="dialog-body">
+        <input name="id" type="hidden">
+        <div class="form-grid">
+          <label class="wide">Objetivo específico
+            <select name="specific" required></select>
+          </label>
+          <label class="wide">Descripción de tarea
+            <textarea name="description" required></textarea>
+          </label>
+          <label>Tipo de tarea
+            <select name="type">
+              <option value="1">Investigación</option>
+              <option value="2">Trabajo de campo</option>
+              <option value="3">Análisis</option>
+              <option value="4">Redacción</option>
+              <option value="5">Gestión</option>
+            </select>
+          </label>
+          <label>Responsable
+            <input name="owner">
+          </label>
+          <label>Coordinador / analista
+            <input name="coordinator">
+          </label>
+          <label>Fecha inicio
+            <input name="start">
+          </label>
+          <label>Fecha término
+            <input name="end">
+          </label>
+          <label>Estado
+            <select name="status">
+              <option value="1">No comenzado</option>
+              <option value="2">En curso</option>
+              <option value="3">Resuelto</option>
+            </select>
+          </label>
+          <label>Prioridad
+            <select name="priority">
+              <option>Baja</option>
+              <option>Media</option>
+              <option>Alta</option>
+            </select>
+          </label>
+          <label>Progreso %
+            <input name="progress" type="number" min="0" max="100" step="1" value="0">
+          </label>
+          <label class="wide">Comentarios
+            <textarea name="comments"></textarea>
+          </label>
+        </div>
+        <p></p>
+        <div class="button-row">
+          <button class="primary" value="save" type="submit">Guardar tarea</button>
+          <button class="danger" id="deleteTaskBtn" value="delete" type="submit">Eliminar tarea</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="milestoneDialog">
+    <form method="dialog" id="milestoneForm">
+      <div class="dialog-head">
+        <h2 id="milestoneDialogTitle">Hitos intermedios</h2>
+        <button value="cancel" type="submit">Cerrar</button>
+      </div>
+      <div class="dialog-body">
+        <input name="taskId" type="hidden">
+        <div id="milestoneList" class="milestone-list"></div>
+        <p></p>
+        <div class="button-row">
+          <button class="ghost" id="addMilestoneBtn" type="button">Sumar hito</button>
+          <button class="primary" value="save" type="submit">Guardar hitos</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const STORAGE_KEY = "iiee_seguimiento_objetivos_v1";
+    const urlParams = new URLSearchParams(window.location.search);
+    const isEditMode = urlParams.get("modo") === "editar" || urlParams.get("edit") === "1";
+    document.body.classList.toggle("edit-mode", isEditMode);
+    document.getElementById("modeLabel").textContent = isEditMode ? "Modo edición" : "Vista dashboard";
+    const statusLabels = { "1": "No comenzado", "2": "En curso", "3": "Resuelto" };
+    const typeLabels = { "1": "Investigación", "2": "Trabajo de campo", "3": "Análisis", "4": "Redacción", "5": "Gestión" };
+
+    const seedTasks = [
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","1. Conducir al IIEE hacia un instituto de referencia provincial.","1","Desarrollar talleres de comunicación e interpretación de indicadores estadísticos relevantes para subsecretarios, secretarios y a nivel ministerial","2","SBS","De acuerdo temática","may-25","en curso","2","Baja","50","De ejecución anual"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","1. Conducir al IIEE hacia un instituto de referencia provincial.","2","Desarrollar capacitaciones específicas para el equipo de comunicaciones de los distintos estamentos del gobierno provincial","2","SBS","De acuerdo temática","10/4/2026","en curso","2","Media","30","Se presentó el pedido a la encargada del la UCC para que se desarrolle el plan de estudio en el segundo semestre"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","1. Conducir al IIEE hacia un instituto de referencia provincial.","3","Desarrollar talleres en establecimientos educativos","2","De acuerdo temática","","may-25","may-25","3","Baja","100","Se culminaron las presentaciones en la ECLGSM"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","1. Conducir al IIEE hacia un instituto de referencia provincial.","4","Desarrollar una imagen de marca","3","SBS","Encargada Comunicaciones MEHyF","mar-25","mar-26","2","Baja","30",""],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","1. Conducir al IIEE hacia un instituto de referencia provincial.","5","Actualización del Website","5","SBS","Equipo Mod","mar-25","en curso","2","Alta","80","Esperando la aprobación ministerial"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","2. Afianzar alianzas con actores estratégicos","1","Desarrollar talleres de comunicación e interpretación de indicadores estadísticos relevantes con empresas y cámaras","5","De acuerdo temática","De acuerdo temática","19/5/2026","en curso","2","Media","20","Se coordina una mesa técnica con el CPCESJ"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","2. Afianzar alianzas con actores estratégicos","2","Afianzar el relacionamiento con los equipos específicos de otras direcciones de estadísticas e INDEC.","5","SBS","SBS","jun-24","en curso","2","Media","50","De ejecución anual"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","3. Crear un equipo especializado que interactúe con el resto de los equipos del IIEE con este paradigma","1","Crear el rol de gestor de datos en el IIEE","5","SBS","RP","may-25","jul-25","3","Alta","100",""],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","3. Crear un equipo especializado que interactúe con el resto de los equipos del IIEE con este paradigma","2","Crear el rol de arquitecto de datos en el IIEE","5","SBS","RP","may-25","jul-25","3","Alta","100",""],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","3. Crear un equipo especializado que interactúe con el resto de los equipos del IIEE con este paradigma","3","Desarrollar capacitaciones específicas en el modelo DAMA para personal del IIEE","5","SBS","De acuerdo temática","jun-25","en curso","2","Media","70","Se consiguió el libro modelo y se forma parte del equipo de estudio de DAMA Argentina, en proceso de certificación. Se presentará el caso del IIEE"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","3. Crear un equipo especializado que interactúe con el resto de los equipos del IIEE con este paradigma","4","Identificar en cada equipo los roles relevantes para este proceso","5","SBS","De acuerdo temática","jun-25","en curso","2","Alta","80","Relacionado con la definición de roles y perfiles gral del IIEE"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","3. Crear un equipo especializado que interactúe con el resto de los equipos del IIEE con este paradigma","5","Crear un Data warehouses del IIEE.","5","SBS","RP_Equipo Mod","jul-25","dic-26","2","Alta","50",""],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","4. Actualizar normativa del IIEE","1","Revisar legislaciones vigentes aplicables a otras direcciones de estadísticas e INDEC","5","SBS","JJM_PV_AI","jun-25","en curso","2","Media","30","Se creo comité revisor interno"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","4. Actualizar normativa del IIEE","2","Establecer prioridades internas del gobierno","5","SBS","Ministro de Economía","","","1","Media","0",""],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de oportunidades del IIEE.","4. Actualizar normativa del IIEE","3","Trabajar en estrecha colaboración con el equipo de Asesoría Jurídica del MEFyH.","1","JJM_PV_AI","Asesoría Letrada MEHyF","","","1","Media","0",""],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de amenazas del IIEE.","1. Aprovechar las fuentes de financiamiento alternativas (CFI, organismos internacionales).","1","Desarrollar proyectos que sean de relevancia para la provincia que el IIEE pueda dar respuesta, que sean financiados bajo el alcance del CFI","5","SBS","AL","may-25","may-26","2","Alta","100","En septiembre se comenzaron con dos de tres contratos, fecha estimada para la ejecución de la encuesta, noviembre-diciembre 2025. Se concluyó en mayo 2026"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de amenazas del IIEE.","1. Aprovechar las fuentes de financiamiento alternativas (CFI, organismos internacionales).","2","Buscar espacios de presentación de proyectos en organismos internacionales","5","SBS","Ministro de Economía","","","1","Media","0",""],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de amenazas del IIEE.","1. Aprovechar las fuentes de financiamiento alternativas (CFI, organismos internacionales).","3","Buscar espacios de presentación de proyectos en organismos nacionales que no sea INDEC","5","SBS","Encargado SEN INDEC","","","1","Baja","0",""],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de amenazas del IIEE.","1. Aprovechar las fuentes de financiamiento alternativas (CFI, organismos internacionales).","4","Desarrollar con INDEC proyectos que sean de interés conjunto que estén por fuera del plan regular de Convenio Marco.","5","SBS","Encargado SEN INDEC","1/5/2026","en curso","1","Media","20","Se llenó la planilla de calidad enviada por indec, esperando una reunión con ellos"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de amenazas del IIEE.","2. Diseñar un plan de carrera para funcionarios del IIEE","1","Confeccionar una descripción de cargos y perfiles","5","SBS","CB_JJM_PV","ago-25","ago-26","2","Alta","100","Se creo comité revisor interno. Se está trabajando con RRHH. A junio la tarea quedó presentada y expediente entregado a la dirección de RRHH"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de amenazas del IIEE.","2. Diseñar un plan de carrera para funcionarios del IIEE","2","Trabajar con el equipo de RRHH del MEFyH para diseñar la materialización de un plan de estas características conforme se tenga el aval ministerial","5","CB_JJM_PV","RRHH","ago-25","ago-26","2","Alta","100",""],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de amenazas del IIEE.","2. Diseñar un plan de carrera para funcionarios del IIEE","3","Trabajar en un plan continuo de capacitación de los funcionarios del IIEE por rol y cargo.","1","SBS","Coordinadores de área","sep-25","en curso","2","Alta","50","Se confeccionó un Plan general, los coordinadores de área harán un inventario de necesidades"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de amenazas del IIEE.","3. Acondicionar el lugar de trabajo actual","1","Reacomodamiento de puestos de trabajo, reunión con el equipo de la DCO","1","SBS","Coordinadores de área_Personal CO","dic-25","en curso","1","Media","40","se presentó expdiente para la modificación edilicia, y se cambiaron algunos puestos priorizando la agrupación por equipo"],
+      ["Objetivos Estratégicos y líneas de acción en el espacio de amenazas del IIEE.","3. Acondicionar el lugar de trabajo actual","2","Evaluar la posibilidad de buscar otro lugar que cumpla con las condiciones que se requiera para la naturaleza del trabajo realizado, y que pueda abarcar a la totalidad del equipo.","1","SBS","Ministro de Economía","","","1","Baja","",""]
+    ];
+
+    const syncChannel = "BroadcastChannel" in window ? new BroadcastChannel("iiee_seguimiento_objetivos_sync") : null;
+    let tasks = loadTasks();
+
+    function normalizeTask(row, index) {
+      return {
+        id: `t-${Date.now()}-${index}-${Math.random().toString(16).slice(2)}`,
+        strategic: row[0],
+        specific: row[1],
+        taskNumber: row[2],
+        description: row[3],
+        type: row[4],
+        owner: row[5],
+        coordinator: row[6],
+        start: row[7],
+        end: row[8],
+        status: row[9],
+        priority: row[10],
+        progress: clamp(row[11]),
+        comments: row[12],
+        milestones: defaultMilestones(row[7], row[8], row[11])
+      };
+    }
+
+    function loadTasks() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try { return migrateTasks(JSON.parse(stored)); } catch (error) { localStorage.removeItem(STORAGE_KEY); }
+      }
+      return seedTasks.map(normalizeTask);
+    }
+
+    function migrateTasks(source) {
+      return Array.isArray(source) ? source.map((task, index) => ({
+        ...task,
+        id: task.id || `t-${Date.now()}-${index}`,
+        milestones: Array.isArray(task.milestones) ? task.milestones : defaultMilestones(task.start, task.end, task.progress)
+      })) : seedTasks.map(normalizeTask);
+    }
+
+    function saveTasks() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      syncChannel?.postMessage({ type: "tasks-updated" });
+    }
+
+    function syncFromStorage() {
+      tasks = loadTasks();
+      render();
+    }
+
+    function canEdit() {
+      return isEditMode;
+    }
+
+    function clamp(value) {
+      const number = Number(String(value ?? "").replace(",", "."));
+      if (!Number.isFinite(number)) return 0;
+      return Math.min(100, Math.max(0, Math.round(number)));
+    }
+
+    function unique(values) {
+      return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+    }
+
+    function defaultMilestones(start, end, progress) {
+      const startDate = parseDate(start);
+      const endDate = parseDate(end);
+      const milestones = [];
+      if (startDate) milestones.push({ name: "Inicio", date: toIsoDate(startDate), done: clamp(progress) > 0, detail: "Hito generado a partir de la fecha de inicio." });
+      if (startDate && endDate && endDate > startDate) {
+        const middle = new Date(startDate.getTime() + ((endDate.getTime() - startDate.getTime()) / 2));
+        milestones.push({ name: "Control intermedio", date: toIsoDate(middle), done: clamp(progress) >= 50, detail: "Punto de control intermedio sugerido." });
+      }
+      if (endDate) milestones.push({ name: "Cierre", date: toIsoDate(endDate), done: clamp(progress) >= 100, detail: "Hito generado a partir de la fecha de término." });
+      return milestones;
+    }
+
+    function getObjectives(source = tasks) {
+      const map = new Map();
+      source.forEach(task => {
+        const key = `${task.strategic}||${task.specific}`;
+        if (!map.has(key)) map.set(key, { strategic: task.strategic, specific: task.specific, tasks: [] });
+        map.get(key).tasks.push(task);
+      });
+      return [...map.values()];
+    }
+
+    function render() {
+      renderFilters();
+      const visible = applyFilters(tasks);
+      renderPublicDashboard(tasks);
+      renderMetrics(visible);
+      renderSidebar(visible);
+      renderObjectives(visible);
+      renderTrafficLight(visible);
+      renderCompliance(visible);
+      renderAlerts(visible);
+      renderRiskMatrix(visible);
+      renderGantt(visible);
+      renderGlossary();
+      renderPrintSummary(visible);
+      fillTaskObjectiveOptions();
+    }
+
+    function applyFilters(source) {
+      const search = document.getElementById("searchInput").value.trim().toLowerCase();
+      const status = document.getElementById("statusFilter").value;
+      const priority = document.getElementById("priorityFilter").value;
+      const owner = document.getElementById("ownerFilter").value;
+
+      return source.filter(task => {
+        const haystack = [task.strategic, task.specific, task.description, task.owner, task.coordinator, task.comments, task.priority, statusLabels[task.status]].join(" ").toLowerCase();
+        return (!search || haystack.includes(search)) &&
+          (!status || task.status === status) &&
+          (!priority || task.priority === priority) &&
+          (!owner || task.owner === owner);
+      });
+    }
+
+    function renderMetrics(source) {
+      const objectives = getObjectives(source).length;
+      const average = source.length ? Math.round(source.reduce((sum, task) => sum + clamp(task.progress), 0) / source.length) : 0;
+      document.getElementById("metricObjectives").textContent = objectives;
+      document.getElementById("metricTasks").textContent = source.length;
+      document.getElementById("metricProgress").textContent = `${average}%`;
+      document.getElementById("metricHigh").textContent = source.filter(task => task.priority === "Alta").length;
+      document.getElementById("countPending").textContent = source.filter(task => task.status === "1").length;
+      document.getElementById("countActive").textContent = source.filter(task => task.status === "2").length;
+      document.getElementById("countDone").textContent = source.filter(task => task.status === "3").length;
+    }
+
+    function renderPublicDashboard(source) {
+      const average = source.length ? Math.round(source.reduce((sum, task) => sum + clamp(task.progress), 0) / source.length) : 0;
+      const summary = summarize(source);
+      document.getElementById("publicRadial").style.setProperty("--value", average);
+      document.getElementById("publicProgress").textContent = `${average}%`;
+      document.getElementById("publicObjectivesCount").textContent = getObjectives(source).length;
+      document.getElementById("publicTasksCount").textContent = source.length;
+      document.getElementById("publicHighRisk").textContent = summary.highRisk;
+      document.getElementById("publicRiskMatrix").innerHTML = riskMatrixHtml(source);
+      renderPublicObjectives(source);
+    }
+
+    function renderPublicObjectives(source) {
+      const groups = new Map();
+      source.forEach(task => {
+        if (!groups.has(task.strategic)) groups.set(task.strategic, []);
+        groups.get(task.strategic).push(task);
+      });
+
+      document.getElementById("publicObjectives").innerHTML = [...groups.entries()].map(([strategic, groupTasks], index) => {
+        const objectiveGroups = getObjectives(groupTasks);
+        const average = Math.round(groupTasks.reduce((sum, task) => sum + clamp(task.progress), 0) / Math.max(groupTasks.length, 1));
+        const highRisk = groupTasks.filter(task => taskRiskLevel(task) === "Alto").length;
+        const done = groupTasks.filter(task => task.status === "3").length;
+        return `
+          <details ${index === 0 ? "open" : ""}>
+            <summary>
+              <span>${escapeHtml(strategic)}</span>
+              <span class="pill ${highRisk ? "medium" : "low"}">${average}% avance</span>
+            </summary>
+            <div class="public-objective-body">
+              <div class="meta">
+                <span class="pill">${objectiveGroups.length} líneas de acción</span>
+                <span class="pill">${groupTasks.length} tareas</span>
+                <span class="pill done">${done} resueltas</span>
+                <span class="pill ${highRisk ? "high" : "low"}">${highRisk} riesgo alto</span>
+              </div>
+              ${objectiveGroups.map(objective => {
+                const objectiveAverage = Math.round(objective.tasks.reduce((sum, task) => sum + clamp(task.progress), 0) / Math.max(objective.tasks.length, 1));
+                const objectiveRisk = objective.tasks.filter(task => taskRiskLevel(task) === "Alto").length;
+                return `
+                  <div class="line-action">
+                    <div>
+                      <b>${escapeHtml(objective.specific)}</b>
+                      <div class="small">${objective.tasks.length} tareas asociadas · ${objectiveRisk} en riesgo alto</div>
+                    </div>
+                    <div>
+                      <strong>${objectiveAverage}%</strong>
+                      <div class="bar"><span style="width:${objectiveAverage}%"></span></div>
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </details>
+        `;
+      }).join("");
+    }
+
+    function renderSidebar(source) {
+      const container = document.getElementById("responsibleSummary");
+      const owners = unique(source.map(task => task.owner));
+      container.innerHTML = owners.slice(0, 8).map(owner => {
+        const ownerTasks = source.filter(task => task.owner === owner);
+        const average = ownerTasks.length ? Math.round(ownerTasks.reduce((sum, task) => sum + clamp(task.progress), 0) / ownerTasks.length) : 0;
+        return `<div class="summary-row"><span>${escapeHtml(owner)}</span><b>${average}%</b><div class="bar wide"><span style="width:${average}%"></span></div></div>`;
+      }).join("");
+    }
+
+    function renderFilters() {
+      const ownerFilter = document.getElementById("ownerFilter");
+      const current = ownerFilter.value;
+      ownerFilter.innerHTML = `<option value="">Todos</option>` + unique(tasks.map(task => task.owner)).map(owner => `<option>${escapeHtml(owner)}</option>`).join("");
+      ownerFilter.value = current;
+    }
+
+    function renderObjectives(source) {
+      const list = document.getElementById("objectiveList");
+      const objectives = getObjectives(source);
+      if (!objectives.length) {
+        list.innerHTML = `<div class="empty">No hay tareas para los filtros seleccionados.</div>`;
+        return;
+      }
+
+      list.innerHTML = objectives.map(objective => {
+        const average = Math.round(objective.tasks.reduce((sum, task) => sum + clamp(task.progress), 0) / objective.tasks.length);
+        const done = objective.tasks.filter(task => task.status === "3").length;
+        return `
+          <article class="objective-card">
+            <div class="objective-head">
+              <div>
+                <p class="strategic">${escapeHtml(objective.strategic)}</p>
+                <h2>${escapeHtml(objective.specific)}</h2>
+                <div class="meta">
+                  <span class="pill">${objective.tasks.length} tareas</span>
+                  <span class="pill done">${done} resueltas</span>
+                  ${isEditMode ? `<button class="ghost edit-only" type="button" data-action="add-task" data-specific="${escapeAttr(objective.specific)}">Sumar tarea</button>` : ""}
+                </div>
+              </div>
+              <div class="objective-progress">
+                <strong>${average}%</strong>
+                <div class="bar"><span style="width:${average}%"></span></div>
+              </div>
+            </div>
+            <div class="tasks">
+              ${objective.tasks.map(renderTask).join("")}
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderTask(task) {
+      const progress = clamp(task.progress);
+      const risk = taskRiskLevel(task);
+      const riskClassName = risk === "Alto" ? "high" : risk === "Medio" ? "medium" : "low";
+      const milestoneCount = (task.milestones || []).length;
+      const side = isEditMode ? `
+        <div class="task-side">
+          <div class="progress-input">
+            <input type="range" min="0" max="100" value="${progress}" data-action="progress" data-id="${task.id}">
+            <output>${progress}%</output>
+          </div>
+          <select data-action="status" data-id="${task.id}">
+            ${Object.entries(statusLabels).map(([value, label]) => `<option value="${value}" ${task.status === value ? "selected" : ""}>${label}</option>`).join("")}
+          </select>
+          <button type="button" data-action="edit" data-id="${task.id}">Editar</button>
+          <button type="button" data-action="milestones" data-id="${task.id}">Hitos</button>
+        </div>
+      ` : `
+        <div class="task-side read-only-side">
+          <strong>${progress}%</strong>
+          <div class="bar"><span style="width:${progress}%"></span></div>
+          <span class="small">${escapeHtml(statusLabels[task.status] || task.status)}</span>
+        </div>
+      `;
+      return `
+        <article class="task-card">
+          <div>
+            <div class="task-title">${escapeHtml(task.taskNumber ? `${task.taskNumber}. ` : "")}${escapeHtml(task.description)}</div>
+            <div class="meta">
+              <span class="pill ${statusClass(task.status)}">${escapeHtml(statusLabels[task.status] || task.status)}</span>
+              <span class="pill ${priorityClass(task.priority)}">${escapeHtml(task.priority || "Sin prioridad")}</span>
+              <span class="pill ${riskClassName}">Riesgo ${risk}</span>
+              <span class="pill">${escapeHtml(typeLabels[task.type] || task.type || "Sin tipo")}</span>
+              <span class="pill">${milestoneCount} hitos</span>
+            </div>
+            <div class="task-details">
+              <span>Responsable <b>${escapeHtml(task.owner || "-")}</b></span>
+              <span>Coord. / analista <b>${escapeHtml(task.coordinator || "-")}</b></span>
+              <span>Inicio <b>${escapeHtml(task.start || "-")}</b></span>
+              <span>Término <b>${escapeHtml(task.end || "-")}</b></span>
+            </div>
+            ${task.comments ? `<p style="margin:10px 0 0;color:var(--muted)">${escapeHtml(task.comments)}</p>` : ""}
+          </div>
+          ${side}
+        </article>
+      `;
+    }
+
+    function renderTrafficLight(source) {
+      const summary = summarize(source);
+      const average = source.length ? Math.round(source.reduce((sum, task) => sum + clamp(task.progress), 0) / source.length) : 0;
+      const level = summary.highRisk > 0 || summary.overdue > 2 ? "red" : summary.mediumRisk > 3 || average < 45 ? "amber" : "green";
+      const label = level === "red" ? "Intervención prioritaria" : level === "amber" ? "Seguimiento cercano" : "Avance controlado";
+      const detail = level === "red"
+        ? "Hay tareas vencidas o de alta prioridad en riesgo alto. Conviene revisar responsables, fechas e hitos críticos."
+        : level === "amber"
+          ? "El plan avanza, pero existen desvíos de progreso o tareas próximas a vencer que requieren control semanal."
+          : "No se observan focos críticos relevantes para los filtros aplicados.";
+      document.getElementById("trafficLight").innerHTML = `
+        <div class="risk-item">
+          <span class="pill ${level === "red" ? "high" : level === "amber" ? "medium" : "low"}">${label}</span>
+          <p style="margin:12px 0 0">${detail}</p>
+        </div>
+      `;
+    }
+
+    function renderCompliance(source) {
+      const summary = summarize(source);
+      const total = Math.max(source.length, 1);
+      const donePct = Math.round((summary.done / total) * 100);
+      const milestonePct = summary.milestones ? Math.round((summary.doneMilestones / summary.milestones) * 100) : 0;
+      document.getElementById("complianceIndicators").innerHTML = [
+        ["Tareas resueltas", `${donePct}%`, `${summary.done} de ${source.length}`],
+        ["Hitos cumplidos", `${milestonePct}%`, `${summary.doneMilestones} de ${summary.milestones}`],
+        ["Tareas vencidas", summary.overdue, "No resueltas con fecha término vencida"],
+        ["Próximas a vencer", summary.dueSoon, "Fecha término dentro de 30 días"]
+      ].map(([label, value, note]) => `
+        <div class="summary-row">
+          <span>${escapeHtml(label)}<span class="small" style="display:block">${escapeHtml(note)}</span></span>
+          <b>${escapeHtml(value)}</b>
+        </div>
+      `).join("");
+    }
+
+    function renderAlerts(source) {
+      const alerts = source
+        .filter(task => taskRiskLevel(task) !== "Bajo")
+        .sort((a, b) => riskScore(b) - riskScore(a))
+        .slice(0, 6);
+      document.getElementById("alertsList").innerHTML = alerts.length ? alerts.map(task => `
+        <div class="risk-item">
+          <b>${escapeHtml(task.description)}</b>
+          <div class="small">${escapeHtml(task.owner || "Sin responsable")} · ${escapeHtml(task.priority || "Sin prioridad")} · ${taskRiskLevel(task)} · ${clamp(task.progress)}% avance</div>
+        </div>
+      `).join("") : `<div class="risk-item small">No hay alertas para los filtros aplicados.</div>`;
+    }
+
+    function renderRiskMatrix(source) {
+      document.getElementById("riskMatrix").innerHTML = riskMatrixHtml(source);
+
+      const critical = source.filter(task => task.priority === "Alta" && taskRiskLevel(task) === "Alto").slice(0, 6);
+      const medium = source.filter(task => taskRiskLevel(task) === "Medio").length;
+      const low = source.filter(task => taskRiskLevel(task) === "Bajo").length;
+      document.getElementById("riskNarrative").innerHTML = `
+        <div class="meta" style="margin-bottom:10px">
+          <span class="pill high">${critical.length} críticas</span>
+          <span class="pill medium">${medium} en seguimiento</span>
+          <span class="pill low">${low} controladas</span>
+        </div>
+        ${critical.length ? critical.map(task => `
+          <div class="risk-item">
+            <b>${escapeHtml(task.description)}</b>
+            <div class="small">Responsable: ${escapeHtml(task.owner || "-")} · Fecha término: ${escapeHtml(task.end || "-")} · Avance: ${clamp(task.progress)}%</div>
+          </div>
+        `).join("") : `<div class="risk-item small">No hay tareas de prioridad alta en riesgo rojo para los filtros aplicados.</div>`}
+      `;
+    }
+
+    function riskMatrixHtml(source) {
+      const priorities = ["Alta", "Media", "Baja"];
+      const risks = ["Alto", "Medio", "Bajo"];
+      let html = `<div class="risk-matrix"><div class="head">Riesgo</div>${priorities.map(priority => `<div class="head">Prioridad ${priority}</div>`).join("")}`;
+      risks.forEach(risk => {
+        html += `<div class="axis">${risk}</div>`;
+        priorities.forEach(priority => {
+          const count = source.filter(task => task.priority === priority && taskRiskLevel(task) === risk).length;
+          const className = risk === "Alto" ? "red" : risk === "Medio" ? "amber" : "green";
+          html += `<div class="risk-cell ${className}"><strong>${count}</strong><span class="small">tareas</span></div>`;
+        });
+      });
+      return `${html}</div>`;
+    }
+
+    function renderGantt(source) {
+      const ganttTasks = source.filter(task => parseDate(task.start) || parseDate(task.end) || (task.milestones || []).some(milestone => parseDate(milestone.date)));
+      const allDates = [];
+      ganttTasks.forEach(task => {
+        [task.start, task.end].forEach(value => {
+          const date = parseDate(value);
+          if (date) allDates.push(date);
+        });
+        (task.milestones || []).forEach(milestone => {
+          const date = parseDate(milestone.date);
+          if (date) allDates.push(date);
+        });
+      });
+
+      const el = document.getElementById("gantt");
+      if (!allDates.length) {
+        el.innerHTML = `<div class="small" style="padding:16px">No hay fechas suficientes para dibujar el Gantt.</div>`;
+        return;
+      }
+
+      let min = new Date(Math.min(...allDates));
+      let max = new Date(Math.max(...allDates));
+      min = new Date(min.getFullYear(), min.getMonth(), 1);
+      max = new Date(max.getFullYear(), max.getMonth() + 1, 1);
+      const months = monthRange(min, max);
+      el.style.setProperty("--months", months.length);
+
+      const head = `<div class="gantt-head"><div>Tarea</div>${months.map(date => `<div>${date.toLocaleDateString("es-AR", { month: "short", year: "2-digit" })}</div>`).join("")}</div>`;
+      const rows = ganttTasks.map(task => {
+        const start = parseDate(task.start) || firstMilestoneDate(task) || min;
+        const end = parseDate(task.end) || lastMilestoneDate(task) || start;
+        const totalMonths = Math.max(months.length - 1, 1);
+        const startPos = clampNumber(monthOffset(min, start) / totalMonths * 100, 0, 100);
+        const endPos = clampNumber((monthOffset(min, end) + .9) / totalMonths * 100, 0, 100);
+        const width = Math.max(2, endPos - startPos);
+        const milestones = (task.milestones || []).map(milestone => {
+          const date = parseDate(milestone.date);
+          if (!date) return "";
+          const pos = clampNumber((monthOffset(min, date) + .5) / totalMonths * 100, 0, 100);
+          return `<span class="gantt-milestone" title="${escapeAttr(milestone.name)} · ${formatDate(date)}" style="left:calc(${pos}% - 6px);border-color:${milestone.done ? "var(--green-600)" : "var(--red-600)"}"></span>`;
+        }).join("");
+        return `
+          <div class="gantt-row">
+            <div class="gantt-task"><b>${escapeHtml(task.taskNumber || "")}</b> ${escapeHtml(task.description)}</div>
+            <div class="gantt-lane">
+              <div class="gantt-track">
+                <span class="gantt-bar" style="left:${startPos}%;width:${width}%"></span>
+                ${milestones}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+      el.innerHTML = head + rows;
+    }
+
+    function renderGlossary() {
+      const items = [
+        ["Semáforo ejecutivo", "Lectura sintética del plan: verde indica avance controlado, ámbar requiere seguimiento cercano y rojo pide intervención prioritaria."],
+        ["Matriz de riesgo", "Cruza el nivel de riesgo operativo con la prioridad declarada de cada tarea para detectar focos críticos."],
+        ["Riesgo alto", "Tarea vencida, con hito vencido, o de alta prioridad con progreso bajo y sin resolución."],
+        ["Riesgo medio", "Tarea próxima a vencer, en curso con avance bajo, o con hitos pendientes relevantes."],
+        ["Hito intermedio", "Punto de control parcial dentro de una tarea, con fecha, estado de cumplimiento y detalle."],
+        ["Gantt visual", "Cronograma gráfico que muestra la ventana temporal de cada tarea y la ubicación de sus hitos."],
+        ["Informe PDF", "Usa la impresión del navegador para guardar un resumen del tablero como PDF."],
+        ["Informe Excel", "Descarga un archivo .xls con resumen, matriz de riesgo, tareas e hitos para abrir en Excel."]
+      ];
+      document.getElementById("glossaryGrid").innerHTML = items.map(([term, detail]) => `
+        <div class="glossary-item"><b>${escapeHtml(term)}</b><div class="small">${escapeHtml(detail)}</div></div>
+      `).join("");
+    }
+
+    function renderPrintSummary(source) {
+      const summary = summarize(source);
+      const average = source.length ? Math.round(source.reduce((sum, task) => sum + clamp(task.progress), 0) / source.length) : 0;
+      document.getElementById("printSummary").innerHTML = `
+        <p>Objetivos visibles: <b>${getObjectives(source).length}</b> · Tareas visibles: <b>${source.length}</b> · Avance promedio: <b>${average}%</b></p>
+        <p>Riesgo alto: <b>${summary.highRisk}</b> · Riesgo medio: <b>${summary.mediumRisk}</b> · Tareas vencidas: <b>${summary.overdue}</b> · Hitos: <b>${summary.milestones}</b></p>
+      `;
+    }
+
+    function fillTaskObjectiveOptions(selected = "") {
+      const select = document.querySelector("#taskForm select[name='specific']");
+      const objectives = getObjectives(tasks);
+      select.innerHTML = objectives.map(objective => `<option value="${escapeAttr(objective.specific)}">${escapeHtml(objective.specific)}</option>`).join("");
+      if (selected) select.value = selected;
+    }
+
+    function statusClass(status) {
+      if (status === "3") return "done";
+      if (status === "2") return "active";
+      return "pending";
+    }
+
+    function priorityClass(priority) {
+      if (priority === "Alta") return "high";
+      if (priority === "Media") return "medium";
+      return "low";
+    }
+
+    function summarize(source) {
+      return source.reduce((acc, task) => {
+        const milestones = task.milestones || [];
+        const risk = taskRiskLevel(task);
+        acc.done += task.status === "3" ? 1 : 0;
+        acc.overdue += isOverdue(task) ? 1 : 0;
+        acc.dueSoon += isDueSoon(task) ? 1 : 0;
+        acc.highRisk += risk === "Alto" ? 1 : 0;
+        acc.mediumRisk += risk === "Medio" ? 1 : 0;
+        acc.lowRisk += risk === "Bajo" ? 1 : 0;
+        acc.milestones += milestones.length;
+        acc.doneMilestones += milestones.filter(milestone => milestone.done).length;
+        acc.overdueMilestones += milestones.filter(milestone => isMilestoneOverdue(milestone)).length;
+        return acc;
+      }, { done: 0, overdue: 0, dueSoon: 0, highRisk: 0, mediumRisk: 0, lowRisk: 0, milestones: 0, doneMilestones: 0, overdueMilestones: 0 });
+    }
+
+    function taskRiskLevel(task) {
+      if (isOverdue(task) || (task.milestones || []).some(milestone => isMilestoneOverdue(milestone))) return "Alto";
+      if (task.priority === "Alta" && task.status !== "3" && clamp(task.progress) < 50) return "Alto";
+      if (isDueSoon(task) || (task.status === "2" && clamp(task.progress) < 35)) return "Medio";
+      if ((task.milestones || []).some(milestone => !milestone.done)) return "Medio";
+      return "Bajo";
+    }
+
+    function riskScore(task) {
+      const base = taskRiskLevel(task) === "Alto" ? 100 : taskRiskLevel(task) === "Medio" ? 50 : 0;
+      const priority = task.priority === "Alta" ? 30 : task.priority === "Media" ? 15 : 0;
+      return base + priority + (100 - clamp(task.progress)) / 10;
+    }
+
+    function isOverdue(task) {
+      const end = parseDate(task.end);
+      return Boolean(end && task.status !== "3" && end < todayStart());
+    }
+
+    function isDueSoon(task) {
+      const end = parseDate(task.end);
+      if (!end || task.status === "3" || end < todayStart()) return false;
+      const days = (end - todayStart()) / 86400000;
+      return days <= 30;
+    }
+
+    function isMilestoneOverdue(milestone) {
+      const date = parseDate(milestone.date);
+      return Boolean(date && !milestone.done && date < todayStart());
+    }
+
+    function todayStart() {
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+
+    function parseDate(value) {
+      const raw = String(value || "").trim().toLowerCase();
+      if (!raw || raw === "en curso") return null;
+      const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (iso) return new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+      const slash = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (slash) return new Date(Number(slash[3]), Number(slash[2]) - 1, Number(slash[1]));
+      const month = raw.match(/^([a-záéíóúñ]{3,})-(\d{2}|\d{4})$/i);
+      if (month) {
+        const months = { ene: 0, enero: 0, feb: 1, febrero: 1, mar: 2, marzo: 2, abr: 3, abril: 3, may: 4, mayo: 4, jun: 5, junio: 5, jul: 6, julio: 6, ago: 7, agosto: 7, sep: 8, sept: 8, septiembre: 8, oct: 9, octubre: 9, nov: 10, noviembre: 10, dic: 11, diciembre: 11 };
+        const monthIndex = months[month[1]];
+        if (monthIndex !== undefined) {
+          const year = Number(month[2].length === 2 ? `20${month[2]}` : month[2]);
+          return new Date(year, monthIndex, 1);
+        }
+      }
+      return null;
+    }
+
+    function toIsoDate(date) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    function formatDate(date) {
+      return date ? date.toLocaleDateString("es-AR") : "-";
+    }
+
+    function monthRange(start, end) {
+      const months = [];
+      let cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+      while (cursor <= end && months.length < 36) {
+        months.push(new Date(cursor));
+        cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+      }
+      return months;
+    }
+
+    function monthOffset(base, date) {
+      return (date.getFullYear() - base.getFullYear()) * 12 + (date.getMonth() - base.getMonth());
+    }
+
+    function firstMilestoneDate(task) {
+      return (task.milestones || []).map(milestone => parseDate(milestone.date)).filter(Boolean).sort((a, b) => a - b)[0] || null;
+    }
+
+    function lastMilestoneDate(task) {
+      return (task.milestones || []).map(milestone => parseDate(milestone.date)).filter(Boolean).sort((a, b) => b - a)[0] || null;
+    }
+
+    function clampNumber(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function openObjectiveDialog() {
+      if (!canEdit()) return;
+      document.getElementById("objectiveForm").reset();
+      document.getElementById("objectiveDialog").showModal();
+    }
+
+    function openTaskDialog(task = null, specific = "") {
+      if (!canEdit()) return;
+      const form = document.getElementById("taskForm");
+      form.reset();
+      fillTaskObjectiveOptions(task?.specific || specific);
+      document.getElementById("taskDialogTitle").textContent = task ? "Editar tarea" : "Sumar tarea";
+      document.getElementById("deleteTaskBtn").style.display = task ? "" : "none";
+      form.elements.id.value = task?.id || "";
+      form.elements.description.value = task?.description || "";
+      form.elements.type.value = task?.type || "5";
+      form.elements.owner.value = task?.owner || "";
+      form.elements.coordinator.value = task?.coordinator || "";
+      form.elements.start.value = task?.start || "";
+      form.elements.end.value = task?.end || "";
+      form.elements.status.value = task?.status || "1";
+      form.elements.priority.value = task?.priority || "Media";
+      form.elements.progress.value = task?.progress ?? 0;
+      form.elements.comments.value = task?.comments || "";
+      document.getElementById("taskDialog").showModal();
+    }
+
+    function saveObjective(form) {
+      if (!canEdit()) return;
+      const strategic = form.elements.strategic.value.trim();
+      const specific = form.elements.specific.value.trim();
+      if (!strategic || !specific) return;
+      tasks.push({
+        id: `t-${Date.now()}`,
+        strategic,
+        specific,
+        taskNumber: "1",
+        description: "Nueva tarea",
+        type: "5",
+        owner: "",
+        coordinator: "",
+        start: "",
+        end: "",
+        status: "1",
+        priority: "Media",
+        progress: 0,
+        comments: "",
+        milestones: []
+      });
+      saveTasks();
+      render();
+    }
+
+    function saveTask(form) {
+      if (!canEdit()) return;
+      const specific = form.elements.specific.value;
+      const objective = getObjectives(tasks).find(item => item.specific === specific);
+      const payload = {
+        strategic: objective?.strategic || "",
+        specific,
+        description: form.elements.description.value.trim(),
+        type: form.elements.type.value,
+        owner: form.elements.owner.value.trim(),
+        coordinator: form.elements.coordinator.value.trim(),
+        start: form.elements.start.value.trim(),
+        end: form.elements.end.value.trim(),
+        status: form.elements.status.value,
+        priority: form.elements.priority.value,
+        progress: clamp(form.elements.progress.value),
+        comments: form.elements.comments.value.trim()
+      };
+
+      const id = form.elements.id.value;
+      if (id) {
+        const task = tasks.find(item => item.id === id);
+        Object.assign(task, payload);
+        task.milestones ||= defaultMilestones(task.start, task.end, task.progress);
+      } else {
+        const nextNumber = tasks.filter(task => task.specific === specific).length + 1;
+        tasks.push({ id: `t-${Date.now()}`, taskNumber: String(nextNumber), ...payload, milestones: defaultMilestones(payload.start, payload.end, payload.progress) });
+      }
+      saveTasks();
+      render();
+    }
+
+    function deleteTask(id) {
+      if (!canEdit()) return;
+      tasks = tasks.filter(task => task.id !== id);
+      saveTasks();
+      render();
+    }
+
+    function openMilestoneDialog(task) {
+      if (!canEdit()) return;
+      if (!task) return;
+      task.milestones ||= [];
+      document.getElementById("milestoneDialogTitle").textContent = `Hitos intermedios · ${task.taskNumber || ""}`;
+      document.querySelector("#milestoneForm input[name='taskId']").value = task.id;
+      renderMilestoneEditor(task);
+      document.getElementById("milestoneDialog").showModal();
+    }
+
+    function renderMilestoneEditor(task) {
+      const list = document.getElementById("milestoneList");
+      list.innerHTML = task.milestones.length ? task.milestones.map((milestone, index) => `
+        <div class="milestone-item" data-index="${index}">
+          <div class="form-grid">
+            <label class="wide">Nombre
+              <input name="milestoneName" value="${escapeAttr(milestone.name || "")}">
+            </label>
+            <label>Fecha
+              <input name="milestoneDate" type="date" value="${escapeAttr(milestone.date || "")}">
+            </label>
+            <label>Cumplido
+              <select name="milestoneDone">
+                <option value="false" ${milestone.done ? "" : "selected"}>No</option>
+                <option value="true" ${milestone.done ? "selected" : ""}>Sí</option>
+              </select>
+            </label>
+            <label class="wide">Detalle
+              <textarea name="milestoneDetail">${escapeHtml(milestone.detail || "")}</textarea>
+            </label>
+          </div>
+          <p></p>
+          <button class="danger" type="button" data-action="remove-milestone" data-index="${index}">Eliminar hito</button>
+        </div>
+      `).join("") : `<div class="milestone-item small">Todavía no hay hitos cargados para esta tarea.</div>`;
+    }
+
+    function addMilestoneToOpenTask() {
+      if (!canEdit()) return;
+      const task = tasks.find(item => item.id === document.querySelector("#milestoneForm input[name='taskId']").value);
+      if (!task) return;
+      task.milestones ||= [];
+      task.milestones.push({ name: "Nuevo hito", date: "", done: false, detail: "" });
+      renderMilestoneEditor(task);
+    }
+
+    function saveMilestones(form) {
+      if (!canEdit()) return;
+      const task = tasks.find(item => item.id === form.elements.taskId.value);
+      if (!task) return;
+      task.milestones = [...document.querySelectorAll("#milestoneList .milestone-item[data-index]")].map(item => ({
+        name: item.querySelector("[name='milestoneName']").value.trim(),
+        date: item.querySelector("[name='milestoneDate']").value,
+        done: item.querySelector("[name='milestoneDone']").value === "true",
+        detail: item.querySelector("[name='milestoneDetail']").value.trim()
+      })).filter(milestone => milestone.name || milestone.date || milestone.detail);
+      saveTasks();
+      render();
+    }
+
+    function removeMilestone(index) {
+      if (!canEdit()) return;
+      const task = tasks.find(item => item.id === document.querySelector("#milestoneForm input[name='taskId']").value);
+      if (!task) return;
+      task.milestones.splice(index, 1);
+      renderMilestoneEditor(task);
+    }
+
+    function exportCsv() {
+      const headers = ["Objetivo Estratégico","Objetivo Específico","ID_Tarea","Descripción_Tarea","Tipo_Tarea","Responsable","Coordinador/analista relacionado","Fecha_Inicio","Fecha_Término","Estado","Prioridad","Progreso_%","Riesgo","Hitos","Comentarios"];
+      const rows = tasks.map(task => [task.strategic, task.specific, task.taskNumber, task.description, typeLabels[task.type] || task.type, task.owner, task.coordinator, task.start, task.end, statusLabels[task.status] || task.status, task.priority, task.progress, taskRiskLevel(task), (task.milestones || []).length, task.comments]);
+      const csv = [headers, ...rows].map(row => row.map(cell => `"${String(cell ?? "").replaceAll('"', '""')}"`).join(",")).join("\n");
+      const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "seguimiento_objetivos_iiee.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function printReport() {
+      renderPrintSummary(applyFilters(tasks));
+      window.print();
+    }
+
+    function exportExcelReport() {
+      const visible = applyFilters(tasks);
+      const summary = summarize(visible);
+      const average = visible.length ? Math.round(visible.reduce((sum, task) => sum + clamp(task.progress), 0) / visible.length) : 0;
+      const matrixRows = [];
+      ["Alto", "Medio", "Bajo"].forEach(risk => {
+        ["Alta", "Media", "Baja"].forEach(priority => {
+          matrixRows.push([risk, priority, visible.filter(task => task.priority === priority && taskRiskLevel(task) === risk).length]);
+        });
+      });
+      const taskRows = visible.map(task => [
+        task.strategic,
+        task.specific,
+        task.taskNumber,
+        task.description,
+        typeLabels[task.type] || task.type,
+        task.owner,
+        task.coordinator,
+        task.start,
+        task.end,
+        statusLabels[task.status] || task.status,
+        task.priority,
+        task.progress,
+        taskRiskLevel(task),
+        (task.milestones || []).length,
+        task.comments
+      ]);
+      const milestoneRows = visible.flatMap(task => (task.milestones || []).map(milestone => [
+        task.taskNumber,
+        task.description,
+        milestone.name,
+        milestone.date,
+        milestone.done ? "Sí" : "No",
+        isMilestoneOverdue(milestone) ? "Vencido" : "En plazo",
+        milestone.detail
+      ]));
+
+      const html = `
+        <html><head><meta charset="utf-8"></head><body>
+          ${tableHtml("Resumen", [
+            ["Indicador", "Valor"],
+            ["Objetivos visibles", getObjectives(visible).length],
+            ["Tareas visibles", visible.length],
+            ["Avance promedio", `${average}%`],
+            ["Riesgo alto", summary.highRisk],
+            ["Riesgo medio", summary.mediumRisk],
+            ["Tareas vencidas", summary.overdue],
+            ["Hitos cumplidos", `${summary.doneMilestones} de ${summary.milestones}`]
+          ])}
+          ${tableHtml("Matriz de riesgo", [["Riesgo", "Prioridad", "Tareas"], ...matrixRows])}
+          ${tableHtml("Tareas", [["Objetivo estratégico", "Objetivo específico", "ID tarea", "Descripción", "Tipo", "Responsable", "Coordinador", "Inicio", "Término", "Estado", "Prioridad", "Progreso", "Riesgo", "Hitos", "Comentarios"], ...taskRows])}
+          ${tableHtml("Hitos", [["ID tarea", "Tarea", "Hito", "Fecha", "Cumplido", "Situación", "Detalle"], ...milestoneRows])}
+        </body></html>
+      `;
+      const blob = new Blob(["\ufeff" + html], { type: "application/vnd.ms-excel;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "informe_resumido_objetivos_iiee.xls";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function tableHtml(title, rows) {
+      return `
+        <h2>${escapeHtml(title)}</h2>
+        <table border="1" cellspacing="0" cellpadding="4">
+          ${rows.map((row, index) => `<tr>${row.map(cell => index === 0 ? `<th>${escapeHtml(cell)}</th>` : `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`).join("")}
+        </table>
+        <br>
+      `;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]));
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replaceAll("\n", " ");
+    }
+
+    document.getElementById("newObjectiveBtn").addEventListener("click", openObjectiveDialog);
+    document.getElementById("newTaskBtn").addEventListener("click", () => openTaskDialog());
+    document.getElementById("exportBtn").addEventListener("click", exportCsv);
+    document.getElementById("excelReportBtn").addEventListener("click", exportExcelReport);
+    document.getElementById("pdfReportBtn").addEventListener("click", printReport);
+    ["searchInput", "statusFilter", "priorityFilter", "ownerFilter"].forEach(id => document.getElementById(id).addEventListener("input", render));
+
+    document.getElementById("objectiveForm").addEventListener("submit", event => {
+      if (event.submitter.value !== "save") return;
+      saveObjective(event.currentTarget);
+    });
+
+    document.getElementById("taskForm").addEventListener("submit", event => {
+      const id = event.currentTarget.elements.id.value;
+      if (event.submitter.value === "delete") {
+        deleteTask(id);
+        return;
+      }
+      if (event.submitter.value === "save") saveTask(event.currentTarget);
+    });
+
+    document.getElementById("milestoneForm").addEventListener("submit", event => {
+      if (event.submitter.value === "save") saveMilestones(event.currentTarget);
+    });
+
+    document.getElementById("addMilestoneBtn").addEventListener("click", addMilestoneToOpenTask);
+
+    document.getElementById("milestoneList").addEventListener("click", event => {
+      const button = event.target.closest("button");
+      if (button?.dataset.action === "remove-milestone") removeMilestone(Number(button.dataset.index));
+    });
+
+    document.getElementById("objectiveList").addEventListener("input", event => {
+      if (!canEdit()) return;
+      const action = event.target.dataset.action;
+      const id = event.target.dataset.id;
+      const task = tasks.find(item => item.id === id);
+      if (!task) return;
+      if (action === "progress") {
+        task.progress = clamp(event.target.value);
+        event.target.nextElementSibling.textContent = `${task.progress}%`;
+        saveTasks();
+        render();
+      }
+      if (action === "status") {
+        task.status = event.target.value;
+        saveTasks();
+        render();
+      }
+    });
+
+    document.getElementById("objectiveList").addEventListener("click", event => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      if (!canEdit() && ["edit", "milestones", "add-task"].includes(button.dataset.action)) return;
+      if (button.dataset.action === "edit") openTaskDialog(tasks.find(task => task.id === button.dataset.id));
+      if (button.dataset.action === "milestones") openMilestoneDialog(tasks.find(task => task.id === button.dataset.id));
+      if (button.dataset.action === "add-task") openTaskDialog(null, button.dataset.specific);
+    });
+
+    window.addEventListener("storage", event => {
+      if (event.key === STORAGE_KEY) syncFromStorage();
+    });
+
+    syncChannel?.addEventListener("message", event => {
+      if (event.data?.type === "tasks-updated") syncFromStorage();
+    });
+
+    render();
+  </script>
+</body>
+</html>
