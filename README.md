@@ -33,19 +33,6 @@ Incluye:
 - Matriz de riesgo tipo semáforo.
 - Objetivos estratégicos y líneas de acción en desplegables.
 
-## ✏️ Modo edición
-
-Para editar objetivos, tareas, estados, avances e hitos, agregar este parámetro al final de la URL:
-
-```text
-?modo=editar
-```
-
-Ejemplo:
-
-```text
-https://usuario.github.io/repositorio/?modo=editar
-```
 
 ## 💾 Persistencia de datos
 
